@@ -108,7 +108,7 @@ class PlayerModule(val jda: JDA) : ModuleStruct(), EventListener {
 
     fun clearPlayers() {
 
-        val games = players.values.associateBy { it.formatName() }
+        val games = players.values.toSet().associateBy { it.formatName() }
 
         players.flatMap { it.key.mutualGuilds }.toSet().forEach { guild ->
             guild.roles.filter { it.name in games }.forEach { it.delete().queue() }
