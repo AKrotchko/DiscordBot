@@ -1,12 +1,16 @@
 
-import listeners.GameListener
+import modules.PlayerModule
 import net.dv8tion.jda.core.AccountType
+import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.JDABuilder
 import java.io.File
 
 object Main {
 
     val tokenFile = File("token.txt")
+
+    lateinit var jda: JDA
+        private set
 
 
     @JvmStatic
@@ -16,9 +20,8 @@ object Main {
             return println("Please fill in the token.txt and start again!")
         }
 
-        val jda = JDABuilder(AccountType.BOT).setToken(tokenFile.readText()).buildAsync()
-        jda.addEventListener(GameListener())
-
+        jda = JDABuilder(AccountType.BOT).setToken(tokenFile.readText()).build()
+        PlayerModule(jda).enable()
     }
 
 }
