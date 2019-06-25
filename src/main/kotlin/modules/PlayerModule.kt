@@ -1,9 +1,9 @@
 package modules
 
 import ext.formatName
-import ext.getCategoryByNameOrCreate
 import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.Permission
+import net.dv8tion.jda.core.entities.Category
 import net.dv8tion.jda.core.entities.Game
 import net.dv8tion.jda.core.entities.User
 import net.dv8tion.jda.core.events.Event
@@ -13,7 +13,8 @@ import struct.ModuleStruct
 
 class PlayerModule(val jda: JDA) : ModuleStruct(), EventListener {
 
-    val players = mutableMapOf<User, Game>()
+    // UUID --> Game
+    val players = mutableMapOf<Long, Game>()
 
 
     override fun onEnable() {
@@ -40,54 +41,43 @@ class PlayerModule(val jda: JDA) : ModuleStruct(), EventListener {
 
     fun addPlayer(player: User, game: Game) {
 
+
         val gameName = game.formatName()
 
         val mutualGuilds = player.mutualGuilds
 
-        val similarPlayers = players.filterValues { it == game }.keys
+        //val similarPlayers = players.filterValues { it.name == game.name }.keys.associateWith { jda.getUserById(it) }
 
-        val similarGuilds = similarPlayers.flatMap { it.mutualGuilds.intersect(mutualGuilds) }.toSet()
+        players[player.idLong] = game
 
-
-        similarGuilds.forEach { guild ->
-
-            val member = guild.getMember(player)
+        mutualGuilds.forEach { guild ->
 
             var role = guild.getRolesByName(gameName, true).firstOrNull()
 
             if (role == null) {
-
                 role = guild.controller.createRole().setName(gameName).setMentionable(true).complete()
+            }
 
-                val category = guild.getCategoryByNameOrCreate(gameName) {
+            if (guild.getMembersWithRoles(role).size >= 1 && guild.getCategoriesByName(gameName, true).isEmpty()) {
 
+                val category = guild.controller.createCategory(gameName).apply {
                     guild.roles.forEach {
                         addPermissionOverride(it, emptyList(), BASIC_PERMISSIONS)
                     }
+                }.complete() as Category
 
-                    this
-                }
-
-                category.createTextChannel(gameName).addPermissionOverride(role, BASIC_PERMISSIONS, emptyList()).queue()
-                category.createVoiceChannel(gameName).addPermissionOverride(role, BASIC_PERMISSIONS, emptyList()).queue()
-
-                guild.members.filter { it.user in similarPlayers }.forEach {
-                    guild.controller.addSingleRoleToMember(it, role).queue()
-                }
-
-                return@forEach
+                category.createTextChannel(gameName).addPermissionOverride(role, BASIC_PERMISSIONS, emptyList()).complete()
+                category.createVoiceChannel(gameName).addPermissionOverride(role, BASIC_PERMISSIONS, emptyList()).complete()
             }
 
-            guild.controller.addSingleRoleToMember(member, role)
+            guild.controller.addSingleRoleToMember(guild.getMember(player), role).complete()
         }
 
-
-        players[player] = game
     }
 
     fun remPlayer(player: User) {
 
-        val gameName = players.remove(player)?.formatName() ?: return
+        val gameName = players.remove(player.idLong)?.formatName() ?: return
         val oldRoles = player.mutualGuilds.mapNotNull { it.getRolesByName(gameName, true)?.firstOrNull() }
 
         oldRoles.forEach { role ->
@@ -96,21 +86,27 @@ class PlayerModule(val jda: JDA) : ModuleStruct(), EventListener {
 
             guild.controller.removeSingleRoleFromMember(guild.getMember(player), role).queue {
 
-                if (guild.getMembersWithRoles(role).size >= 2) return@queue
+                val count = guild.getMembersWithRoles(role).size
 
-                role.delete().queue()
+                if (count <= 1) {
+                    role.delete().queue()
+                }
 
-                guild.getTextChannelsByName(gameName, true).firstOrNull()?.delete()?.queue()
-                guild.getVoiceChannelsByName(gameName, true).firstOrNull()?.delete()?.queue()
+                if (count <= 2) {
+                    guild.getCategoriesByName(gameName, true).firstOrNull()?.delete()?.queue()
+                    guild.getTextChannelsByName(gameName.replace(' ', '-'), true).firstOrNull()?.delete()?.queue()
+                    guild.getVoiceChannelsByName(gameName, true).firstOrNull()?.delete()?.queue()
+                }
             }
         }
     }
 
     fun clearPlayers() {
 
-        val games = players.values.toSet().associateBy { it.formatName() }
+        val games = players.values.map { it.formatName() }.toSet()
 
-        players.flatMap { it.key.mutualGuilds }.toSet().forEach { guild ->
+        players.keys.map { jda.getUserById(it) }.flatMap { it.mutualGuilds }.toSet().forEach { guild ->
+            //guild.getCategoriesByName("Games", true).firstOrNull()?.delete()?.queue()
             guild.roles.filter { it.name in games }.forEach { it.delete().queue() }
             guild.textChannels.filter { it.name in games }.forEach { it.delete().queue() }
             guild.voiceChannels.filter { it.name in games }.forEach { it.delete().queue() }
