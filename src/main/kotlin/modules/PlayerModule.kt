@@ -19,6 +19,8 @@ class PlayerModule(val jda: JDA) : ModuleStruct(), EventListener {
 
     override fun onEnable() {
 
+        init()
+
         jda.guilds.flatMap { it.members }.toSet().filter { it.game != null }.forEach {
             addPlayer(it.user, it.game)
         }
@@ -32,7 +34,7 @@ class PlayerModule(val jda: JDA) : ModuleStruct(), EventListener {
     }
 
     override fun onEvent(event: Event) {
-        when(event) {
+        when (event) {
             is UserUpdateGameEvent -> event.onCall()
             else -> return
         }
@@ -133,6 +135,62 @@ class PlayerModule(val jda: JDA) : ModuleStruct(), EventListener {
         addPlayer(member.user, newGame)
     }
 
+    fun init() {
+        val channelName = "🎮"
+
+        for (guild in jda.guilds) { //check each guild in the list of guilds this bot is assigned to
+
+            var controller = guild.controller
+            var doesChannelExist = false //false by default, set to true if we find the channel
+
+            for (voiceChannel in guild.voiceChannels) { //check each channel in this particular guild
+
+                if (voiceChannel.name == "$channelName Lobby") { //If the channels name matchers our default (🎮 Lobby)
+                    doesChannelExist = true
+                }
+//
+//                    var categories = guild.categories
+//
+//                    for (category in categories) {
+//                        if (category.name == channelName) {
+//                            print("The category name was already created, move on")
+//                        } else {
+////                            guild.controller.createCategory(channelName).queue()
+//
+//                            controller.createCategory(channelName).queue() //The category has been created here
+//
+//                        }
+//                    }
+//
+//
+//                    for (category in guild.categories) {
+//                        if (category.name == channelName) {
+////                            controller.createVoiceChannel(channelName).setParent(category).complete()
+//                           var channel = controller.createVoiceChannel(channelName).setParent(category).complete()
+//                            return //voice channel has been created, stop the method.
+//                        }
+//                    }
+//                    var category = guild.getCategoriesByName(channelName, true)[0]
+//                    guild.getVoiceChannelByNameOrCreate(channelName, true, )
+
+//                    guild.getCategoriesByName(channelName, true)[0].createVoiceChannel(channelName).setParent(guild.getCategoriesByName(channelName, true)[0]).queue()
+            }
+            if (!doesChannelExist) {
+                    controller.createCategory(channelName).complete() //Creating the channel
+                println("Just queued the category creation.")
+
+                for (category in guild.categories) {
+                    println("The category named " + category.name + " compared to channelName " + channelName + " equals " + (category.name == channelName))
+
+                    if (category.name == channelName) {
+                        controller.createVoiceChannel("$channelName Lobby").setParent(category).complete()
+                        controller.createTextChannel("$channelName Chat").setParent(category).complete()
+                        return //return from the method, we've made the category and the channel.
+                    }
+                }
+            }
+        }
+    }
 
 
     companion object {

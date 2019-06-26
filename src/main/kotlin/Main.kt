@@ -1,4 +1,4 @@
-
+import ext.getVoiceChannelByNameOrCreate
 import modules.PlayerModule
 import net.dv8tion.jda.core.AccountType
 import net.dv8tion.jda.core.JDA
@@ -15,7 +15,6 @@ object Main : EventListener {
     lateinit var jda: JDA
         private set
 
-
     @JvmStatic
     fun main(args: Array<String>) {
 
@@ -24,6 +23,7 @@ object Main : EventListener {
         }
 
         jda = JDABuilder(AccountType.BOT).setToken(tokenFile.readText()).addEventListener(this).build()
+
     }
 
     override fun onEvent(event: Event) {
