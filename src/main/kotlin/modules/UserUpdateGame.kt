@@ -62,9 +62,9 @@ fun addPlayer(player: User, game: Game, players: MutableMap<Long, Game>) {
 
         guild.controller.addSingleRoleToMember(guild.getMember(player), role).complete()
 
-        val channel = checkNotNull(guild.getVoiceChannelsByName(gameName, true)[0])
-        if (role != null) {
-            addRoleToChannel(role, channel)
+        val channels = (guild.getVoiceChannelsByName(gameName, true))
+        if (role != null && channels.size > 0) {
+            addRoleToChannel(role, channels[0])
         }
     }
 
@@ -73,15 +73,23 @@ fun addPlayer(player: User, game: Game, players: MutableMap<Long, Game>) {
 fun addRoleToChannel(newRole: Role, channel: VoiceChannel) {
     //For each user in the lobby channel, if they have the same role as the newly handed out role AND they are in the lobby, put them in the new voice channel.
 
-    val lobbyChannel = checkNotNull(channel.guild.getVoiceChannelsByName("🎮-chat", true)[0])
+    val lobbyChannels = (channel.guild.getVoiceChannelsByName("🎮 Lobby", true))
     val controller = channel.guild.controller
 
-    for (member in lobbyChannel.members) {
-        for (role in member.roles) {
-            if (role == newRole) {
-                controller.moveVoiceMember(member, channel)
+
+
+    if (lobbyChannels.size > 0) {
+        var lobbyChannel = lobbyChannels[0]
+
+        for (member in lobbyChannel.members) {
+            for (role in member.roles) {
+                if (role == newRole) {
+                    controller.moveVoiceMember(member, channel)
+                }
             }
         }
     }
+
+
 
 }

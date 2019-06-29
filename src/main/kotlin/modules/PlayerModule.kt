@@ -17,6 +17,7 @@ class PlayerModule(private val jda: JDA) : ModuleStruct(), EventListener {
     // UUID --> Game
     private val players = mutableMapOf<Long, Game>()
 
+
     override fun onEnable() {
 
         generateDefaultChannels() //The moment that the bot enters a server it will create the default channels.
@@ -45,7 +46,7 @@ class PlayerModule(private val jda: JDA) : ModuleStruct(), EventListener {
         }
     }
 
-    private fun clearPlayers() {
+    fun clearPlayers() {
 
         val games = players.values.map { it.formatName() }.toSet()
 
@@ -77,11 +78,10 @@ class PlayerModule(private val jda: JDA) : ModuleStruct(), EventListener {
         addPlayer(member.user, newGame, players)
     }
 
-    private fun MessageReceivedEvent.onMessage() {
-        remPlayer(member.user, players)
+    fun MessageReceivedEvent.onMessage() {
 
         if (message.channelType == ChannelType.TEXT) {
-            if (message.contentRaw == "?help") {
+            if (message.contentRaw.equals("?help")) {
                 createWelcomeWebhook(message.guild, message.channel.name)
             }
         }
@@ -89,12 +89,12 @@ class PlayerModule(private val jda: JDA) : ModuleStruct(), EventListener {
     }
 
     //leaving this function here, since it's called often.
-    private fun generateDefaultChannels() {
+    fun generateDefaultChannels() {
         val channelName = "🎮"
 
         for (guild in jda.guilds) { //check each guild in the list of guilds this bot is assigned to
 
-            val controller = guild.controller
+            var controller = guild.controller
             var doesChannelExist = false //false by default, set to true if we find the channel
 
 //            if(checkNotNull(guild.getTextChannelsByName(newGame.name, true).firstOrNull()))

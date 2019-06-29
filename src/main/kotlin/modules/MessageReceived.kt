@@ -18,7 +18,7 @@ fun createWelcomeWebhook(guild: Guild, channelName: String) {
                     .setColor(Color(2409760))
                     .setFooter("Discord Hack Week", "https://cdn.discordapp.com/attachments/592802691340697611/593964305263624212/hack_week.jpg")
                     .setThumbnail("https://cdn.discordapp.com/attachments/592802691340697611/593958561911013396/JDA_Hack_Week.png")
-                    .setAuthor("Gaymr Bot", "https://github.com/AKrotchko/DiscordBot", "https://cdn.discordapp.com/attachments/592802691340697611/593958561911013396/JDA_Hack_Week.png")
+                    .setAuthor("Gamr", "https://github.com/AKrotchko/DiscordBot", "https://cdn.discordapp.com/attachments/592802691340697611/593958561911013396/JDA_Hack_Week.png")
                     .addField("When two or more people play the same game...", "You get your own channels and role!", false)
                     .addField("If you're hanging out in the lobby...", "I will put you in your new channel!", false)
                     .addField("Still confused?", "Just start playing some games with friends and try it out. If you need to see this again, type ``?help``", false)
