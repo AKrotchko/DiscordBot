@@ -1,4 +1,4 @@
-package ext
+package me.camdenorrb.botr.ext
 
 import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.requests.restaction.ChannelAction

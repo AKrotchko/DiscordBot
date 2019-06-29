@@ -1,4 +1,4 @@
-package modules
+package me.camdenorrb.botr.modules
 
 
 

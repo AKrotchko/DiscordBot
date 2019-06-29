@@ -1,7 +1,8 @@
-package modules
+package me.camdenorrb.botr.modules
 
-import ext.formatName
-import net.dv8tion.jda.core.JDA
+import me.camdenorrb.botr.Botr
+import me.camdenorrb.botr.ext.formatName
+import me.camdenorrb.botr.struct.ModuleStruct
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Category
 import net.dv8tion.jda.core.entities.Game
@@ -9,10 +10,9 @@ import net.dv8tion.jda.core.entities.User
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.user.update.UserUpdateGameEvent
 import net.dv8tion.jda.core.hooks.EventListener
-import struct.ModuleStruct
 
 
-class PlayerModule(private val jda: JDA) : ModuleStruct(), EventListener {
+class PlayerModule(private val botr: Botr) : ModuleStruct(), EventListener {
 
     // UUID --> Game
     private val players = mutableMapOf<Long, Game>()
@@ -20,15 +20,15 @@ class PlayerModule(private val jda: JDA) : ModuleStruct(), EventListener {
 
     override fun onEnable() {
 
-        jda.guilds.flatMap { it.members }.toSet().filter { it.game != null }.forEach {
+        botr.jda.guilds.flatMap { it.members }.toSet().filter { it.game != null }.forEach {
             addPlayer(it.user, it.game, players)
         }
 
-        jda.addEventListener(this)
+        botr.jda.addEventListener(this)
     }
 
     override fun onDisable() {
-        jda.removeEventListener(this)
+        botr.jda.removeEventListener(this)
         clearPlayers()
     }
 
@@ -43,7 +43,7 @@ class PlayerModule(private val jda: JDA) : ModuleStruct(), EventListener {
 
         val games = players.values.map { it.formatName() }.toSet()
 
-        players.keys.map { jda.getUserById(it) }.flatMap { it.mutualGuilds }.toSet().forEach { guild ->
+        players.keys.map { botr.jda.getUserById(it) }.flatMap { it.mutualGuilds }.toSet().forEach { guild ->
             //guild.getCategoriesByName("Games", true).firstOrNull()?.delete()?.queue()
             guild.roles.filter { it.name in games }.forEach { it.delete().queue() }
             guild.textChannels.filter { it.name in games }.forEach { it.delete().queue() }

@@ -1,4 +1,4 @@
-package base
+package me.camdenorrb.botr.base
 
 interface ModuleBase {
 

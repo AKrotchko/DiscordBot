@@ -1,6 +1,6 @@
-package struct
+package me.camdenorrb.botr.struct
 
-import base.ModuleBase
+import me.camdenorrb.botr.base.ModuleBase
 
 abstract class ModuleStruct : ModuleBase {
 

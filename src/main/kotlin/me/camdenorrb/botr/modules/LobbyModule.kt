@@ -1,23 +1,23 @@
-package modules
+package me.camdenorrb.botr.modules
 
-import ext.CONTROLLER_SYMBOL
-import ext.getCategoryByNameOrCreate
+import me.camdenorrb.botr.Botr
+import me.camdenorrb.botr.ext.CONTROLLER_SYMBOL
+import me.camdenorrb.botr.ext.getCategoryByNameOrCreate
+import me.camdenorrb.botr.struct.ModuleStruct
 import net.dv8tion.jda.core.EmbedBuilder
-import net.dv8tion.jda.core.JDA
 import net.dv8tion.jda.core.MessageBuilder
 import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.EventListener
-import struct.ModuleStruct
 import java.awt.Color
 
-class LobbyModule(val jda: JDA) : ModuleStruct(), EventListener {
+class LobbyModule(val botr: Botr) : ModuleStruct(), EventListener {
 
     override fun onEnable() {
 
-        jda.guilds.forEach { guild ->
+        botr.jda.guilds.forEach { guild ->
 
             val category = guild.getCategoryByNameOrCreate(LOBBY_CATEGORY_CHANNEL)
 
@@ -33,11 +33,11 @@ class LobbyModule(val jda: JDA) : ModuleStruct(), EventListener {
 
         }
 
-        jda.addEventListener(this)
+        botr.jda.addEventListener(this)
     }
 
     override fun onDisable() {
-        jda.removeEventListener(this)
+        botr.jda.removeEventListener(this)
     }
 
     override fun onEvent(event: Event) {
@@ -50,7 +50,7 @@ class LobbyModule(val jda: JDA) : ModuleStruct(), EventListener {
 
 
     fun MessageReceivedEvent.onCall() {
-        if (message.channelType != ChannelType.TEXT || message.contentRaw.equals("?help", true)) return
+        if (message.channelType != ChannelType.TEXT || !message.contentRaw.equals("?help", true)) return
         message.channel.sendMessage(defaultMessage).queue()
     }
 
@@ -73,7 +73,7 @@ class LobbyModule(val jda: JDA) : ModuleStruct(), EventListener {
                 .setColor(Color(2409760))
                 .setFooter("Discord Hack Week", "https://cdn.discordapp.com/attachments/592802691340697611/593964305263624212/hack_week.jpg")
                 .setThumbnail("https://cdn.discordapp.com/attachments/592802691340697611/593958561911013396/JDA_Hack_Week.png")
-                .setAuthor("Game", "https://github.com/AKrotchko/DiscordBot", "https://cdn.discordapp.com/attachments/592802691340697611/593958561911013396/JDA_Hack_Week.png")
+                .setAuthor("Gamr", "https://github.com/AKrotchko/DiscordBot", "https://cdn.discordapp.com/attachments/592802691340697611/593958561911013396/JDA_Hack_Week.png")
                 .addField("When two or more people play the same game...", "You get your own channels and role!", false)
                 .addField("If you're hanging out in the lobby...", "I will put you in your new channel!", false)
                 .addField("Still confused?", "Just start playing some games with friends and try it out. If you need to see this again, type ``?help``", false)
