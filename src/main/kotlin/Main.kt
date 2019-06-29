@@ -16,6 +16,7 @@ object Main : EventListener {
     lateinit var jda: JDA
         private set
 
+
     @JvmStatic
     fun main(args: Array<String>) {
 
@@ -25,6 +26,7 @@ object Main : EventListener {
 
         jda = JDABuilder(AccountType.BOT).setToken(tokenFile.readText()).addEventListener(this).build()
     }
+
 
     override fun onEvent(event: Event) {
 

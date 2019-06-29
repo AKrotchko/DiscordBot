@@ -33,8 +33,12 @@ class LobbyModule(val jda: JDA) : ModuleStruct(), EventListener {
 
         }
 
+        jda.addEventListener(this)
     }
 
+    override fun onDisable() {
+        jda.removeEventListener(this)
+    }
 
     override fun onEvent(event: Event) {
         when (event) {
