@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.MessageBuilder
 import net.dv8tion.jda.core.entities.ChannelType
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.events.Event
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent
 import net.dv8tion.jda.core.hooks.EventListener
 import java.awt.Color
@@ -42,15 +43,34 @@ class LobbyModule(val botr: Botr) : ModuleStruct(), EventListener {
 
     override fun onEvent(event: Event) {
         when (event) {
-            // TODO: Listen for voice channel join
+            is GuildVoiceJoinEvent -> event.onCall()
             is MessageReceivedEvent -> event.onCall()
             else -> return
         }
     }
 
 
+    fun GuildVoiceJoinEvent.onCall() {
+
+        if (channelJoined.name != LOBBY_VOICE_CHANNEL) {
+            return
+        }
+
+
+        val gameRole = member.roles.find { it.name.startsWith(CONTROLLER_SYMBOL) } ?: return
+
+        val gameChannel = guild.getVoiceChannelsByName(gameRole.name, true).firstOrNull() ?: return
+
+
+        guild.controller.moveVoiceMember(member, gameChannel).queue()
+    }
+
     fun MessageReceivedEvent.onCall() {
-        if (message.channelType != ChannelType.TEXT || !message.contentRaw.equals("?help", true)) return
+
+        if (message.channelType != ChannelType.TEXT || !message.contentRaw.equals("?help", true)) {
+            return
+        }
+
         message.channel.sendMessage(defaultMessage).queue()
     }
 
