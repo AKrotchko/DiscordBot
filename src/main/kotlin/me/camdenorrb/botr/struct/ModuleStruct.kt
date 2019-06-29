@@ -1,6 +1,6 @@
-package struct
+package me.camdenorrb.botr.struct
 
-import base.ModuleBase
+import me.camdenorrb.botr.base.ModuleBase
 
 abstract class ModuleStruct : ModuleBase {
 
@@ -8,9 +8,9 @@ abstract class ModuleStruct : ModuleBase {
         private set
 
 
-    protected abstract fun onEnable()
+    protected open fun onEnable() = Unit
 
-    protected abstract fun onDisable()
+    protected open fun onDisable() = Unit
 
 
     final override fun enable() {
