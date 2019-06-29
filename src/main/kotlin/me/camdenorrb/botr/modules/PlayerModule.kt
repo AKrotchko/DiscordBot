@@ -11,17 +11,16 @@ import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.user.update.UserUpdateGameEvent
 import net.dv8tion.jda.core.hooks.EventListener
 
-
-class PlayerModule(private val botr: Botr) : ModuleStruct(), EventListener {
+class PlayerModule(val botr: Botr) : ModuleStruct(), EventListener {
 
     // UUID --> Game
-    private val players = mutableMapOf<Long, Game>()
+    val players = mutableMapOf<Long, Game>()
 
 
     override fun onEnable() {
 
         botr.jda.guilds.flatMap { it.members }.toSet().filter { it.game != null }.forEach {
-            addPlayer(it.user, it.game, players)
+            addPlayer(it.user, it.game)
         }
 
         botr.jda.addEventListener(this)
@@ -33,53 +32,15 @@ class PlayerModule(private val botr: Botr) : ModuleStruct(), EventListener {
     }
 
     override fun onEvent(event: Event) {
-        when (event) {
+        when(event) {
             is UserUpdateGameEvent -> event.onCall()
             else -> return
         }
     }
 
-    fun clearPlayers() {
 
-        val games = players.values.map { it.formatName() }.toSet()
+    fun addPlayer(player: User, game: Game) {
 
-        players.keys.map { botr.jda.getUserById(it) }.flatMap { it.mutualGuilds }.toSet().forEach { guild ->
-            //guild.getCategoriesByName("Games", true).firstOrNull()?.delete()?.queue()
-            guild.roles.filter { it.name in games }.forEach { it.delete().queue() }
-            guild.textChannels.filter { it.name in games }.forEach { it.delete().queue() }
-            guild.voiceChannels.filter { it.name in games }.forEach { it.delete().queue() }
-        }
-
-        players.clear()
-    }
-
-    fun remPlayer(player: User, players: MutableMap<Long, Game>) {
-
-        val gameName = players.remove(player.idLong)?.formatName() ?: return
-        val oldRoles = player.mutualGuilds.mapNotNull { it.getRolesByName(gameName, true)?.firstOrNull() }
-
-        oldRoles.forEach { role ->
-
-            val guild = role.guild
-
-            guild.controller.removeSingleRoleFromMember(guild.getMember(player), role).queue {
-
-                val count = guild.getMembersWithRoles(role).size
-
-                if (count < 1) {
-                    role.delete().queue()
-                }
-
-                if (count < 2) {
-                    guild.getCategoriesByName(gameName, true).firstOrNull()?.delete()?.queue()
-                    guild.getTextChannelsByName(gameName.replace(' ', '-'), true).firstOrNull()?.delete()?.queue()
-                    guild.getVoiceChannelsByName(gameName, true).firstOrNull()?.delete()?.queue()
-                }
-            }
-        }
-    }
-
-    fun addPlayer(player: User, game: Game, players: MutableMap<Long, Game>) {
 
         val gameName = game.formatName()
 
@@ -97,7 +58,9 @@ class PlayerModule(private val botr: Botr) : ModuleStruct(), EventListener {
                 role = guild.controller.createRole().setName(gameName).setMentionable(true).complete()
             }
 
-            if (guild.getMembersWithRoles(role).size >= 1 && guild.getCategoriesByName(gameName, true).isEmpty()) {
+            val roleCount = guild.members.count { players[it.user.idLong]?.name == game.name }
+
+            if (roleCount > 1 && guild.getCategoriesByName(gameName, true).isEmpty()) {
 
                 val category = guild.controller.createCategory(gameName).apply {
                     guild.roles.forEach {
@@ -114,17 +77,57 @@ class PlayerModule(private val botr: Botr) : ModuleStruct(), EventListener {
 
     }
 
+    fun remPlayer(player: User) {
 
-    private fun UserUpdateGameEvent.onCall() {
+        val gameName = players.remove(player.idLong)?.formatName() ?: return
+        val oldRoles = player.mutualGuilds.mapNotNull { it.getRolesByName(gameName, true)?.firstOrNull() }
 
-        remPlayer(member.user, players)
+        oldRoles.forEach { role ->
+
+            val guild = role.guild
+
+            guild.controller.removeSingleRoleFromMember(guild.getMember(player), role).complete()
+
+            val count = guild.members.count { players[it.user.idLong]?.formatName() == gameName }
+
+            if (count < 1) {
+                role.delete().queue()
+            }
+
+            if (count < 2) {
+                guild.getCategoriesByName(gameName, true).firstOrNull()?.delete()?.queue()
+                guild.getTextChannelsByName(gameName.replace(' ', '-'), true).firstOrNull()?.delete()?.queue()
+                guild.getVoiceChannelsByName(gameName, true).firstOrNull()?.delete()?.queue()
+            }
+        }
+    }
+
+    fun clearPlayers() {
+
+        val games = players.values.map { it.formatName() }.toSet()
+
+        players.keys.map { botr.jda.getUserById(it) }.flatMap { it.mutualGuilds }.toSet().forEach { guild ->
+            //guild.getCategoriesByName("Games", true).firstOrNull()?.delete()?.queue()
+            guild.roles.filter { it.name in games }.forEach { it.delete().queue() }
+            guild.textChannels.filter { it.name in games }.forEach { it.delete().queue() }
+            guild.voiceChannels.filter { it.name in games }.forEach { it.delete().queue() }
+        }
+
+        players.clear()
+    }
+
+
+    fun UserUpdateGameEvent.onCall() {
+
+        remPlayer(member.user)
 
         if (newGame == null) {
             return
         }
 
-        addPlayer(member.user, newGame, players)
+        addPlayer(member.user, newGame)
     }
+
 
 
     companion object {
