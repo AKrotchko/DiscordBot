@@ -116,18 +116,12 @@ class PlayerModule(private val botr: Botr) : ModuleStruct(), EventListener {
 
 
     private fun UserUpdateGameEvent.onCall() {
+
         remPlayer(member.user, players)
 
         if (newGame == null) {
             return
         }
-
-        val testingChannel = checkNotNull(guild.getTextChannelsByName("testing", true).firstOrNull()) {
-            "Testing channel not found"
-        }
-
-
-        testingChannel.sendMessage(newGame.formatName()).queue()
 
         addPlayer(member.user, newGame, players)
     }

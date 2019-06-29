@@ -28,7 +28,7 @@ class LobbyModule(val botr: Botr) : ModuleStruct(), EventListener {
             }
 
             if (category.voiceChannels.none { it.name == LOBBY_VOICE_CHANNEL }) {
-                category.createTextChannel(LOBBY_VOICE_CHANNEL).queue()
+                category.createVoiceChannel(LOBBY_VOICE_CHANNEL).queue()
             }
 
         }
