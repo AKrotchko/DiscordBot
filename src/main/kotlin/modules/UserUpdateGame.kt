@@ -16,11 +16,11 @@ fun remPlayer(player: User, players: MutableMap<Long, Game>) {
 
             val count = guild.getMembersWithRoles(role).size
 
-            if (count <= 1) {
+            if (count < 1) {
                 role.delete().queue()
             }
 
-            if (count <= 2) {
+            if (count < 2) {
                 guild.getCategoriesByName(gameName, true).firstOrNull()?.delete()?.queue()
                 guild.getTextChannelsByName(gameName.replace(' ', '-'), true).firstOrNull()?.delete()?.queue()
                 guild.getVoiceChannelsByName(gameName, true).firstOrNull()?.delete()?.queue()
@@ -30,6 +30,7 @@ fun remPlayer(player: User, players: MutableMap<Long, Game>) {
 }
 
 fun addPlayer(player: User, game: Game, players: MutableMap<Long, Game>) {
+
 
 
     val gameName = game.formatName()
@@ -58,13 +59,18 @@ fun addPlayer(player: User, game: Game, players: MutableMap<Long, Game>) {
 
             category.createTextChannel(gameName).addPermissionOverride(role, PlayerModule.BASIC_PERMISSIONS, emptyList()).complete()
             category.createVoiceChannel(gameName).addPermissionOverride(role, PlayerModule.BASIC_PERMISSIONS, emptyList()).complete()
+
+
         }
 
         guild.controller.addSingleRoleToMember(guild.getMember(player), role).complete()
 
-        val channels = (guild.getVoiceChannelsByName(gameName, true))
-        if (role != null && channels.size > 0) {
-            addRoleToChannel(role, channels[0])
+
+
+        val channel = (guild.getVoiceChannelsByName(gameName, true)).firstOrNull()
+
+        if (role != null && channel != null) {
+            addRoleToChannel(role, channel)
         }
     }
 
@@ -73,18 +79,24 @@ fun addPlayer(player: User, game: Game, players: MutableMap<Long, Game>) {
 fun addRoleToChannel(newRole: Role, channel: VoiceChannel) {
     //For each user in the lobby channel, if they have the same role as the newly handed out role AND they are in the lobby, put them in the new voice channel.
 
-    val lobbyChannels = (channel.guild.getVoiceChannelsByName("🎮 Lobby", true))
+    val lobbyChannel = (channel.guild.getVoiceChannelsByName("🎮 Lobby", true)).firstOrNull()
     val controller = channel.guild.controller
 
 
 
-    if (lobbyChannels.size > 0) {
-        var lobbyChannel = lobbyChannels[0]
+    if (lobbyChannel != null) {
 
         for (member in lobbyChannel.members) {
-            for (role in member.roles) {
-                if (role == newRole) {
-                    controller.moveVoiceMember(member, channel)
+
+            var roles = member.roles
+
+
+            for (role in roles) {
+
+                println(role.name)
+
+                if (role.name.equals(newRole.name, true)) {
+                    controller.moveVoiceMember(member, channel).complete()
                 }
             }
         }
