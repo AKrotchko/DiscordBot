@@ -5,22 +5,22 @@ import net.dv8tion.jda.core.requests.restaction.ChannelAction
 import net.dv8tion.jda.core.requests.restaction.RoleAction
 
 
-fun Guild.getRoleByNameOrCreate(name: String, ignoreCase: Boolean = true, onCreate: RoleAction.() -> RoleAction): Role {
+fun Guild.getRoleByNameOrCreate(name: String, ignoreCase: Boolean = true, onCreate: RoleAction.() -> Unit = {}): Role {
     return getRolesByName(name, ignoreCase).firstOrNull()
-        ?: controller.createRole().setName(name).onCreate().complete()
+        ?: controller.createRole().setName(name).apply(onCreate).complete()
 }
 
-fun Guild.getTextChannelByNameOrCreate(name: String, ignoreCase: Boolean = true, onCreate: ChannelAction.() -> ChannelAction): TextChannel {
+fun Guild.getTextChannelByNameOrCreate(name: String, ignoreCase: Boolean = true, onCreate: ChannelAction.() -> Unit = {}): TextChannel {
     return getTextChannelsByName(name, ignoreCase).firstOrNull()
-        ?: controller.createTextChannel(name).onCreate().complete() as TextChannel
+        ?: controller.createTextChannel(name).apply(onCreate).complete() as TextChannel
 }
 
-fun Guild.getVoiceChannelByNameOrCreate(name: String, ignoreCase: Boolean = true, onCreate: ChannelAction.() -> ChannelAction): VoiceChannel {
+fun Guild.getVoiceChannelByNameOrCreate(name: String, ignoreCase: Boolean = true, onCreate: ChannelAction.() -> Unit = {}): VoiceChannel {
     return getVoiceChannelsByName(name, ignoreCase).firstOrNull()
-        ?: controller.createVoiceChannel(name).onCreate().complete() as VoiceChannel
+        ?: controller.createVoiceChannel(name).apply(onCreate).complete() as VoiceChannel
 }
 
-fun Guild.getCategoryByNameOrCreate(name: String, ignoreCase: Boolean = true, onCreate: ChannelAction.() -> ChannelAction): Category {
+fun Guild.getCategoryByNameOrCreate(name: String, ignoreCase: Boolean = true, onCreate: ChannelAction.() -> Unit = {}): Category {
     return getCategoriesByName(name, ignoreCase).firstOrNull()
-        ?: controller.createCategory(name).onCreate().complete() as Category
+        ?: controller.createCategory(name).apply(onCreate).complete() as Category
 }

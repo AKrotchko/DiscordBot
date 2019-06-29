@@ -1,4 +1,5 @@
-import ext.getVoiceChannelByNameOrCreate
+
+import modules.LobbyModule
 import modules.PlayerModule
 import net.dv8tion.jda.core.AccountType
 import net.dv8tion.jda.core.JDA
@@ -23,11 +24,13 @@ object Main : EventListener {
         }
 
         jda = JDABuilder(AccountType.BOT).setToken(tokenFile.readText()).addEventListener(this).build()
-
     }
 
     override fun onEvent(event: Event) {
+
         if (event !is ReadyEvent) return
+
+        LobbyModule(jda).enable()
         PlayerModule(jda).enable()
     }
 
